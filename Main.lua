@@ -1,4 +1,4 @@
--- [[ TỰ KIỂM TRA LỖI LOAD SCRIPT ]]
+-- [[ MRGHOST HUB VIP - ULTRA V3 (WITH KEY SYSTEM) ]]
 local success, err = pcall(function()
 
     -- Services
@@ -7,44 +7,45 @@ local success, err = pcall(function()
     local RunService = game:GetService("RunService")
     local Players = game:GetService("Players")
     local TweenService = game:GetService("TweenService")
-    local HttpService = game:GetService("HttpService")
+    local StarterGui = game:GetService("StarterGui")
 
     local LocalPlayer = Players.LocalPlayer
+    local Mouse = LocalPlayer:GetMouse()
 
-    -- Config Key System
-    local CORRECT_KEY = "TTTT" -- Key hệ thống: TTTT
-    local KEY_LINK = "https://discord.gg/KDTDZjYSR" -- Link Discord
-    local BACKUP_LINK = "https://fnote.net/notes/jv9G9J" -- Link Fnote dự phòng
-    local CACHE_FILE = "MrGhostVIP_KeyCache.json"
-    local EXPIRE_TIME = 86400 -- 24 Tiếng
-
-    -- Container ScreenGui
+    -- Container UI
+    local ParentContainer = (gethui and gethui()) or CoreGui or LocalPlayer:WaitForChild("PlayerGui")
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "MrGhostHub_UltraVIP_UI"
-    ScreenGui.Parent = (gethui and gethui()) or CoreGui or LocalPlayer:WaitForChild("PlayerGui")
+    ScreenGui.Name = "MrGhostHub_UltraV3_Key"
+    ScreenGui.Parent = ParentContainer
     ScreenGui.ResetOnSpawn = false
 
-    -- Helper RGB Dynamic Color
+    local CORRECT_KEY = "MRGHOST-VIP-2026"
+
+    local function Notify(title, text, duration)
+        pcall(function()
+            StarterGui:SetCore("SendNotification", {
+                Title = title or "★ MRGHOST HUB ULTRA ★",
+                Text = text or "",
+                Duration = duration or 3
+            })
+        end)
+    end
+
     local function getRGBColor(speed)
         speed = speed or 3
         local hue = (tick() % speed) / speed
-        return Color3.fromHSV(hue, 0.85, 1)
+        return Color3.fromHSV(hue, 0.95, 1)
     end
 
-    -- Hàm Kéo Thả (Draggable) Chuẩn
-    local function makeDraggable(gui, onDragStart, onDragEnd)
+    local function makeDraggable(gui)
         local dragging, dragInput, dragStart, startPos
         gui.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                 dragging = true
                 dragStart = input.Position
                 startPos = gui.Position
-                if onDragStart then onDragStart() end
                 input.Changed:Connect(function()
-                    if input.UserInputState == Enum.UserInputState.End then 
-                        dragging = false 
-                        if onDragEnd then onDragEnd() end
-                    end
+                    if input.UserInputState == Enum.UserInputState.End then dragging = false end
                 end)
             end
         end)
@@ -62,542 +63,604 @@ local success, err = pcall(function()
     end
 
     -- =========================================================
-    -- KIỂM TRA CACHE KEY
-    -- =========================================================
-    local function isKeySavedValid()
-        if readfile and isfile and isfile(CACHE_FILE) then
-            local successRead, data = pcall(function()
-                return HttpService:JSONDecode(readfile(CACHE_FILE))
-            end)
-            if successRead and data and data.key == CORRECT_KEY and data.time then
-                if (os.time() - data.time) < EXPIRE_TIME then
-                    return true
-                end
-            end
-        end
-        return false
-    end
-
-    local function saveKeyCache(key)
-        if writefile then
-            pcall(function()
-                local data = {
-                    key = key,
-                    time = os.time()
-                }
-                writefile(CACHE_FILE, HttpService:JSONEncode(data))
-            end)
-        end
-    end
-
-    -- =========================================================
-    -- HÀM KHỞI TẠO MAIN HUB (KHI KEY ĐÚNG)
+    -- MAIN HUB LOADER
     -- =========================================================
     local function loadMainHub()
-        -- MAIN FRAME (CYBERPUNK STYLE)
         local MainFrame = Instance.new("Frame")
         MainFrame.Name = "MainFrame"
-        MainFrame.Size = UDim2.new(0, 360, 0, 360)
-        MainFrame.Position = UDim2.new(0.5, -180, 0.35, -180)
-        MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 16)
+        MainFrame.Size = UDim2.new(0, 370, 0, 480)
+        MainFrame.Position = UDim2.new(0.5, -185, 0.3, -240)
+        MainFrame.BackgroundColor3 = Color3.fromRGB(10, 8, 18)
         MainFrame.BackgroundTransparency = 0.15
         MainFrame.BorderSizePixel = 0
         MainFrame.Parent = ScreenGui
 
-        local MainCorner = Instance.new("UICorner")
-        MainCorner.CornerRadius = UDim.new(0, 20)
-        MainCorner.Parent = MainFrame
+        Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 18)
 
         local UIStroke = Instance.new("UIStroke")
         UIStroke.Thickness = 2.5
-        UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         UIStroke.Parent = MainFrame
 
-        -- TITLE HEADER VIP
         local TitleBar = Instance.new("Frame")
-        TitleBar.Name = "TitleBar"
-        TitleBar.Size = UDim2.new(1, 0, 0, 52)
-        TitleBar.BackgroundColor3 = Color3.fromRGB(18, 14, 28)
+        TitleBar.Size = UDim2.new(1, 0, 0, 50)
+        TitleBar.BackgroundColor3 = Color3.fromRGB(18, 14, 30)
         TitleBar.BackgroundTransparency = 0.2
         TitleBar.BorderSizePixel = 0
         TitleBar.Parent = MainFrame
-
-        local TitleBarCorner = Instance.new("UICorner")
-        TitleBarCorner.CornerRadius = UDim.new(0, 20)
-        TitleBarCorner.Parent = TitleBar
-
-        local VipBadge = Instance.new("TextLabel")
-        VipBadge.Size = UDim2.new(0, 40, 0, 22)
-        VipBadge.Position = UDim2.new(0, 12, 0.5, -11)
-        VipBadge.BackgroundColor3 = Color3.fromRGB(255, 0, 120)
-        VipBadge.Text = "VIP"
-        VipBadge.TextColor3 = Color3.fromRGB(255, 255, 255)
-        VipBadge.TextSize = 12
-        VipBadge.Font = Enum.Font.FredokaOne
-        VipBadge.Parent = TitleBar
-
-        local BadgeCorner = Instance.new("UICorner")
-        BadgeCorner.CornerRadius = UDim.new(0, 6)
-        BadgeCorner.Parent = VipBadge
+        Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0, 18)
 
         local Title = Instance.new("TextLabel")
-        Title.Name = "Title"
-        Title.Size = UDim2.new(0, 180, 1, 0)
-        Title.Position = UDim2.new(0, 58, 0, 0)
+        Title.Size = UDim2.new(1, -20, 1, 0)
+        Title.Position = UDim2.new(0, 15, 0, 0)
         Title.BackgroundTransparency = 1
-        Title.Text = "MRGHOST HUB VIP"
+        Title.Text = "✨ MRGHOST VIP - ULTRA V3 ✨"
         Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-        Title.TextSize = 16
+        Title.TextSize = 13
         Title.Font = Enum.Font.FredokaOne
         Title.TextXAlignment = Enum.TextXAlignment.Left
         Title.Parent = TitleBar
 
-        local TitleGradient = Instance.new("UIGradient")
-        TitleGradient.Color = ColorSequence.new{
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 180)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 240, 255)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 220, 0))
-        }
-        TitleGradient.Parent = Title
-
-        -- 💖 TRÁI TIM NHÚN NHẢY TRONG MAIN MENU
-        local HeartLabel = Instance.new("TextLabel")
-        HeartLabel.Name = "HeartLabel"
-        HeartLabel.Size = UDim2.new(0, 80, 1, 0)
-        HeartLabel.Position = UDim2.new(0, 240, 0, 0)
-        HeartLabel.BackgroundTransparency = 1
-        HeartLabel.Text = "💖 TTTT"
-        HeartLabel.TextColor3 = Color3.fromRGB(255, 100, 180)
-        HeartLabel.TextSize = 13
-        HeartLabel.Font = Enum.Font.FredokaOne
-        HeartLabel.TextXAlignment = Enum.TextXAlignment.Left
-        HeartLabel.Parent = TitleBar
-
-        task.spawn(function()
-            local baseSize = 13
-            local targetSize = 16
-            while task.wait() do
-                if HeartLabel.Parent then
-                    TweenService:Create(HeartLabel, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {TextSize = targetSize}):Play()
-                    task.wait(0.6)
-                    TweenService:Create(HeartLabel, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {TextSize = baseSize}):Play()
-                    task.wait(0.6)
-                else
-                    break
-                end
-            end
-        end)
-
-        -- SCROLLING FRAME
         local Scroll = Instance.new("ScrollingFrame")
-        Scroll.Size = UDim2.new(1, -20, 1, -65)
-        Scroll.Position = UDim2.new(0, 10, 0, 58)
+        Scroll.Size = UDim2.new(1, -12, 1, -62)
+        Scroll.Position = UDim2.new(0, 6, 0, 56)
         Scroll.BackgroundTransparency = 1
         Scroll.BorderSizePixel = 0
-        Scroll.ScrollBarThickness = 4
-        Scroll.CanvasSize = UDim2.new(0, 0, 0, 400)
+        Scroll.ScrollBarThickness = 3
+        Scroll.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 128)
+        Scroll.CanvasSize = UDim2.new(0, 0, 0, 950)
         Scroll.Parent = MainFrame
 
         local UIList = Instance.new("UIListLayout")
         UIList.Parent = Scroll
         UIList.SortOrder = Enum.SortOrder.LayoutOrder
-        UIList.Padding = UDim.new(0, 10)
+        UIList.Padding = UDim.new(0, 8)
 
-        -- Helper Tạo Toggle Card
         local function createToggleCard(titleText, layoutOrder, callback)
             local Card = Instance.new("Frame")
-            Card.Size = UDim2.new(1, -6, 0, 45)
-            Card.BackgroundColor3 = Color3.fromRGB(20, 16, 28)
-            Card.BackgroundTransparency = 0.25
+            Card.Size = UDim2.new(1, -8, 0, 44)
+            Card.BackgroundColor3 = Color3.fromRGB(18, 14, 28)
+            Card.BackgroundTransparency = 0.2
             Card.LayoutOrder = layoutOrder
             Card.Parent = Scroll
-
-            local CardCorner = Instance.new("UICorner")
-            CardCorner.CornerRadius = UDim.new(0, 12)
-            CardCorner.Parent = Card
+            Instance.new("UICorner", Card).CornerRadius = UDim.new(0, 12)
 
             local CardLabel = Instance.new("TextLabel")
             CardLabel.Size = UDim2.new(0.7, 0, 1, 0)
             CardLabel.Position = UDim2.new(0, 12, 0, 0)
             CardLabel.BackgroundTransparency = 1
             CardLabel.Text = titleText
-            CardLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-            CardLabel.TextSize = 14
+            CardLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
+            CardLabel.TextSize = 12
             CardLabel.Font = Enum.Font.FredokaOne
             CardLabel.TextXAlignment = Enum.TextXAlignment.Left
             CardLabel.Parent = Card
 
             local SwitchBg = Instance.new("TextButton")
-            SwitchBg.Size = UDim2.new(0, 50, 0, 24)
-            SwitchBg.Position = UDim2.new(1, -60, 0.5, -12)
-            SwitchBg.BackgroundColor3 = Color3.fromRGB(40, 32, 55)
+            SwitchBg.Size = UDim2.new(0, 48, 0, 24)
+            SwitchBg.Position = UDim2.new(1, -56, 0.5, -12)
+            SwitchBg.BackgroundColor3 = Color3.fromRGB(35, 30, 50)
             SwitchBg.Text = ""
             SwitchBg.AutoButtonColor = false
             SwitchBg.Parent = Card
-
-            local SwitchCorner = Instance.new("UICorner")
-            SwitchCorner.CornerRadius = UDim.new(1, 0)
-            SwitchCorner.Parent = SwitchBg
+            Instance.new("UICorner", SwitchBg).CornerRadius = UDim.new(1, 0)
 
             local SwitchDot = Instance.new("Frame")
             SwitchDot.Size = UDim2.new(0, 18, 0, 18)
             SwitchDot.Position = UDim2.new(0, 3, 0.5, -9)
-            SwitchDot.BackgroundColor3 = Color3.fromRGB(160, 140, 180)
+            SwitchDot.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
             SwitchDot.Parent = SwitchBg
-
-            local SwitchDotCorner = Instance.new("UICorner")
-            SwitchDotCorner.CornerRadius = UDim.new(1, 0)
-            SwitchDotCorner.Parent = SwitchDot
+            Instance.new("UICorner", SwitchDot).CornerRadius = UDim.new(1, 0)
 
             local enabled = false
             SwitchBg.MouseButton1Click:Connect(function()
                 enabled = not enabled
                 if enabled then
-                    TweenService:Create(SwitchBg, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 0, 120)}):Play()
-                    TweenService:Create(SwitchDot, TweenInfo.new(0.2), {Position = UDim2.new(1, -21, 0.5, -9), BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+                    TweenService:Create(SwitchBg, TweenInfo.new(0.25, Enum.EasingStyle.Quart), {BackgroundColor3 = Color3.fromRGB(0, 230, 180)}):Play()
+                    TweenService:Create(SwitchDot, TweenInfo.new(0.25, Enum.EasingStyle.Back), {Position = UDim2.new(1, -21, 0.5, -9), BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
                 else
-                    TweenService:Create(SwitchBg, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 32, 55)}):Play()
-                    TweenService:Create(SwitchDot, TweenInfo.new(0.2), {Position = UDim2.new(0, 3, 0.5, -9), BackgroundColor3 = Color3.fromRGB(160, 140, 180)}):Play()
+                    TweenService:Create(SwitchBg, TweenInfo.new(0.25, Enum.EasingStyle.Quart), {BackgroundColor3 = Color3.fromRGB(35, 30, 50)}):Play()
+                    TweenService:Create(SwitchDot, TweenInfo.new(0.25, Enum.EasingStyle.Back), {Position = UDim2.new(0, 3, 0.5, -9), BackgroundColor3 = Color3.fromRGB(150, 150, 150)}):Play()
                 end
                 callback(enabled)
             end)
             return Card
         end
 
-        -- Helper Tạo TextBox Input Card
         local function createInputCard(titleText, placeholderText, defaultVal, layoutOrder, callback)
             local Card = Instance.new("Frame")
-            Card.Size = UDim2.new(1, -6, 0, 68)
-            Card.BackgroundColor3 = Color3.fromRGB(20, 16, 28)
-            Card.BackgroundTransparency = 0.25
+            Card.Size = UDim2.new(1, -8, 0, 56)
+            Card.BackgroundColor3 = Color3.fromRGB(18, 14, 28)
+            Card.BackgroundTransparency = 0.2
             Card.LayoutOrder = layoutOrder
             Card.Parent = Scroll
-
-            local CardCorner = Instance.new("UICorner")
-            CardCorner.CornerRadius = UDim.new(0, 12)
-            CardCorner.Parent = Card
+            Instance.new("UICorner", Card).CornerRadius = UDim.new(0, 12)
 
             local InputLabel = Instance.new("TextLabel")
-            InputLabel.Size = UDim2.new(1, -24, 0, 20)
-            InputLabel.Position = UDim2.new(0, 12, 0, 6)
+            InputLabel.Size = UDim2.new(1, -24, 0, 18)
+            InputLabel.Position = UDim2.new(0, 12, 0, 4)
             InputLabel.BackgroundTransparency = 1
             InputLabel.Text = titleText
-            InputLabel.TextColor3 = Color3.fromRGB(0, 240, 255)
-            InputLabel.TextSize = 13
+            InputLabel.TextColor3 = Color3.fromRGB(0, 230, 255)
+            InputLabel.TextSize = 11
             InputLabel.Font = Enum.Font.FredokaOne
             InputLabel.TextXAlignment = Enum.TextXAlignment.Left
             InputLabel.Parent = Card
 
             local TextBox = Instance.new("TextBox")
-            TextBox.Size = UDim2.new(1, -24, 0, 30)
-            TextBox.Position = UDim2.new(0, 12, 0, 30)
-            TextBox.BackgroundColor3 = Color3.fromRGB(30, 24, 42)
+            TextBox.Size = UDim2.new(1, -24, 0, 24)
+            TextBox.Position = UDim2.new(0, 12, 0, 25)
+            TextBox.BackgroundColor3 = Color3.fromRGB(28, 22, 42)
             TextBox.Text = tostring(defaultVal)
             TextBox.PlaceholderText = placeholderText
             TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-            TextBox.TextSize = 13
+            TextBox.TextSize = 12
             TextBox.Font = Enum.Font.SourceSansBold
             TextBox.ClearTextOnFocus = false
             TextBox.Parent = Card
-
-            local BoxCorner = Instance.new("UICorner")
-            BoxCorner.CornerRadius = UDim.new(0, 8)
-            BoxCorner.Parent = TextBox
-
-            local BoxStroke = Instance.new("UIStroke")
-            BoxStroke.Thickness = 1
-            BoxStroke.Color = Color3.fromRGB(80, 60, 110)
-            BoxStroke.Parent = TextBox
+            Instance.new("UICorner", TextBox).CornerRadius = UDim.new(0, 6)
 
             TextBox.FocusLost:Connect(function()
                 local num = tonumber(TextBox.Text)
-                if num then
-                    callback(num)
-                else
-                    TextBox.Text = tostring(defaultVal)
-                end
+                if num then callback(num) else TextBox.Text = tostring(defaultVal) end
             end)
-
             return Card
         end
 
-        -- TÍNH NĂNG 1: SPEED
-        local walkSpeedValue = 50
+        -- =========================================================
+        -- MOBILE CONTROLS
+        -- =========================================================
+        local MobileContainer = Instance.new("Frame")
+        MobileContainer.Name = "MobileControls"
+        MobileContainer.Size = UDim2.new(0, 160, 0, 120)
+        MobileContainer.Position = UDim2.new(0.75, 0, 0.45, 0)
+        MobileContainer.BackgroundTransparency = 1
+        MobileContainer.Parent = ScreenGui
+
+        local MobileDashBtn = Instance.new("TextButton")
+        MobileDashBtn.Size = UDim2.new(0, 150, 0, 38)
+        MobileDashBtn.Position = UDim2.new(0, 0, 0, 0)
+        MobileDashBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 110)
+        MobileDashBtn.Text = "⚡ LƯỚT (DASH)"
+        MobileDashBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        MobileDashBtn.TextSize = 11
+        MobileDashBtn.Font = Enum.Font.FredokaOne
+        MobileDashBtn.Visible = false
+        MobileDashBtn.Parent = MobileContainer
+        Instance.new("UICorner", MobileDashBtn).CornerRadius = UDim.new(0, 10)
+
+        local MobileFlyFwdBtn = Instance.new("TextButton")
+        MobileFlyFwdBtn.Size = UDim2.new(0, 150, 0, 32)
+        MobileFlyFwdBtn.Position = UDim2.new(0, 0, 0, 44)
+        MobileFlyFwdBtn.BackgroundColor3 = Color3.fromRGB(0, 230, 150)
+        MobileFlyFwdBtn.Text = "⬆ BAY TIẾN (FORWARD)"
+        MobileFlyFwdBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        MobileFlyFwdBtn.TextSize = 10
+        MobileFlyFwdBtn.Font = Enum.Font.FredokaOne
+        MobileFlyFwdBtn.Visible = false
+        MobileFlyFwdBtn.Parent = MobileContainer
+        Instance.new("UICorner", MobileFlyFwdBtn).CornerRadius = UDim.new(0, 8)
+
+        local MobileFlyUpBtn = Instance.new("TextButton")
+        MobileFlyUpBtn.Size = UDim2.new(0, 72, 0, 32)
+        MobileFlyUpBtn.Position = UDim2.new(0, 0, 0, 80)
+        MobileFlyUpBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 255)
+        MobileFlyUpBtn.Text = "▲ LÊN"
+        MobileFlyUpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        MobileFlyUpBtn.TextSize = 10
+        MobileFlyUpBtn.Font = Enum.Font.FredokaOne
+        MobileFlyUpBtn.Visible = false
+        MobileFlyUpBtn.Parent = MobileContainer
+        Instance.new("UICorner", MobileFlyUpBtn).CornerRadius = UDim.new(0, 8)
+
+        local MobileFlyDownBtn = Instance.new("TextButton")
+        MobileFlyDownBtn.Size = UDim2.new(0, 72, 0, 32)
+        MobileFlyDownBtn.Position = UDim2.new(0, 78, 0, 80)
+        MobileFlyDownBtn.BackgroundColor3 = Color3.fromRGB(0, 130, 255)
+        MobileFlyDownBtn.Text = "▼ XUỐNG"
+        MobileFlyDownBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        MobileFlyDownBtn.TextSize = 10
+        MobileFlyDownBtn.Font = Enum.Font.FredokaOne
+        MobileFlyDownBtn.Visible = false
+        MobileFlyDownBtn.Parent = MobileContainer
+        Instance.new("UICorner", MobileFlyDownBtn).CornerRadius = UDim.new(0, 8)
+
+        makeDraggable(MobileContainer)
+
+        -- =========================================================
+        -- CHỨC NĂNG MOVEMENT BYPASS
+        -- =========================================================
+
+        -- 1. CHẠY NHANH
+        local walkSpeedValue = 60
         local speedEnabled = false
-        createToggleCard("⚡ Chạy Nhanh (Speed)", 1, function(state)
+        createToggleCard("🏃 Chạy Siêu Tốc (Speed All Game)", 1, function(state)
             speedEnabled = state
-            if not speedEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                LocalPlayer.Character.Humanoid.WalkSpeed = 16
+            if not speedEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+                LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = 16
             end
         end)
+        createInputCard("⚡ Tốc Độ Chạy", "Chỉnh speed...", 60, 2, function(val) walkSpeedValue = val end)
 
-        createInputCard("🏃 Tốc Độ Di Chuyển (WalkSpeed)", "Nhập WalkSpeed...", 50, 2, function(val)
-            walkSpeedValue = val
-        end)
-
-        -- TÍNH NĂNG 2: JUMP
-        local jumpPowerValue = 120
-        local jumpEnabled = false
-        createToggleCard("🦘 Nhảy Cao (Jump)", 3, function(state)
-            jumpEnabled = state
-            if not jumpEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                LocalPlayer.Character.Humanoid.JumpPower = 50
-                LocalPlayer.Character.Humanoid.UseJumpPower = true
+        -- 2. NHẢY CAO
+        local jumpPowerValue = 100
+        local jumpPowerEnabled = false
+        createToggleCard("🦘 Nhảy Cao (High Jump All Game)", 3, function(state)
+            jumpPowerEnabled = state
+            if not jumpPowerEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+                LocalPlayer.Character:FindFirstChildOfClass("Humanoid").JumpPower = 50
+                LocalPlayer.Character:FindFirstChildOfClass("Humanoid").JumpHeight = 7.2
             end
         end)
+        createInputCard("🚀 Độ Cao Nhảy", "Chỉnh jump height...", 100, 4, function(val) jumpPowerValue = val end)
 
-        createInputCard("💥 Sức Nhảy (JumpPower)", "Nhập JumpPower...", 120, 4, function(val)
-            jumpPowerValue = val
-        end)
-
-        -- TÍNH NĂNG 3: INFINITE JUMP
+        -- 3. INFINITE JUMP
         local infJumpEnabled = false
-        createToggleCard("🌌 Infinite Jump (Nhảy Trên Không)", 5, function(state)
-            infJumpEnabled = state
-        end)
+        createToggleCard("🌌 Infinite Jump (Nhảy Vô Hạn)", 5, function(state) infJumpEnabled = state end)
 
         UserInputService.JumpRequest:Connect(function()
-            if infJumpEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-                LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+            if infJumpEnabled and LocalPlayer.Character then
+                local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+                if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
             end
         end)
 
-        -- TÍNH NĂNG 4: NOCLIP
+        -- 4. BAY
+        local flySpeedValue = 60
+        local flyEnabled = false
+        local mobileFlyUp, mobileFlyDown, mobileFlyFwd = false, false, false
+
+        createToggleCard("🕊️ Bay Tự Do (Fly Mode)", 6, function(state)
+            flyEnabled = state
+            local char = LocalPlayer.Character
+            MobileFlyUpBtn.Visible = flyEnabled
+            MobileFlyDownBtn.Visible = flyEnabled
+            MobileFlyFwdBtn.Visible = flyEnabled
+
+            if flyEnabled and char and char:FindFirstChild("HumanoidRootPart") then
+                local hrp = char.HumanoidRootPart
+                local bodyVel = Instance.new("BodyVelocity")
+                bodyVel.Name = "FlyVel"
+                bodyVel.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+                bodyVel.Velocity = Vector3.zero
+                bodyVel.Parent = hrp
+
+                local bodyGyro = Instance.new("BodyGyro")
+                bodyGyro.Name = "FlyGyro"
+                bodyGyro.MaxTorque = Vector3.new(1e9, 1e9, 1e9)
+                bodyGyro.CFrame = hrp.CFrame
+                bodyGyro.Parent = hrp
+            else
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local v = char.HumanoidRootPart:FindFirstChild("FlyVel")
+                    local g = char.HumanoidRootPart:FindFirstChild("FlyGyro")
+                    if v then v:Destroy() end
+                    if g then g:Destroy() end
+                end
+            end
+        end)
+        createInputCard("🚀 Tốc Độ Bay (Fly Speed)", "Số speed bay...", 60, 7, function(val) flySpeedValue = val end)
+
+        MobileFlyFwdBtn.MouseButton1Down:Connect(function() mobileFlyFwd = true end)
+        MobileFlyFwdBtn.MouseButton1Up:Connect(function() mobileFlyFwd = false end)
+        MobileFlyUpBtn.MouseButton1Down:Connect(function() mobileFlyUp = true end)
+        MobileFlyUpBtn.MouseButton1Up:Connect(function() mobileFlyUp = false end)
+        MobileFlyDownBtn.MouseButton1Down:Connect(function() mobileFlyDown = true end)
+        MobileFlyDownBtn.MouseButton1Up:Connect(function() mobileFlyDown = false end)
+
+        -- 5. NOCLIP
         local noclipEnabled = false
-        createToggleCard("👻 Noclip (Đi Xuyên Tường)", 6, function(state)
+        createToggleCard("👻 Noclip (Đi Xuyên Tường)", 8, function(state)
             noclipEnabled = state
+            if not noclipEnabled and LocalPlayer.Character then
+                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then part.CanCollide = true end
+                end
+            end
         end)
 
-        RunService.Stepped:Connect(function()
-            if noclipEnabled and LocalPlayer.Character then
-                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+        -- 6. LƯỚT
+        local dashDistance = 35
+        local blinkEnabled = false
+
+        local function executeDash()
+            if not blinkEnabled then return end
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local hrp = char.HumanoidRootPart
+                hrp.CFrame = hrp.CFrame + (hrp.CFrame.LookVector * dashDistance)
+            end
+        end
+
+        createToggleCard("⚡ Lướt Biến Hình (Phím 'Q')", 9, function(state) 
+            blinkEnabled = state 
+            MobileDashBtn.Visible = blinkEnabled
+        end)
+        createInputCard("📏 Khoảng Cách Lướt (Dash)", "Độ xa...", 35, 10, function(val) dashDistance = val end)
+
+        MobileDashBtn.MouseButton1Click:Connect(executeDash)
+        UserInputService.InputBegan:Connect(function(input, gpe)
+            if not gpe and input.KeyCode == Enum.KeyCode.Q then executeDash() end
+        end)
+
+        -- 7. GHOST MODE
+        local ghostEnabled = false
+        local originalTransparencies = {}
+
+        createToggleCard("👻 Supreme Ghost (Ẩn Thân Tối Thượng)", 11, function(state)
+            ghostEnabled = state
+            local char = LocalPlayer.Character
+            if char then
+                for _, part in pairs(char:GetDescendants()) do
                     if part:IsA("BasePart") then
-                        part.CanCollide = false
+                        if ghostEnabled then
+                            originalTransparencies[part] = part.Transparency
+                            part.Transparency = 1
+                            if part.Name ~= "HumanoidRootPart" then part.CanCollide = false end
+                        else
+                            part.Transparency = originalTransparencies[part] or 0
+                            if part.Name ~= "HumanoidRootPart" then part.CanCollide = true end
+                        end
+                    elseif part:IsA("Decal") then
+                        if ghostEnabled then
+                            originalTransparencies[part] = part.Transparency
+                            part.Transparency = 1
+                        else
+                            part.Transparency = originalTransparencies[part] or 0
+                        end
+                    elseif part:IsA("BillboardGui") or part:IsA("SurfaceGui") then
+                        part.Enabled = not ghostEnabled
                     end
                 end
             end
+        end)
 
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                local hum = LocalPlayer.Character.Humanoid
-                if speedEnabled then hum.WalkSpeed = walkSpeedValue end
-                if jumpEnabled then 
-                    hum.UseJumpPower = true
-                    hum.JumpPower = jumpPowerValue 
+        -- 8. TELEPORT 2 CLICK 3D MARKER
+        local tpToggleState = false
+        local tpTargetPos = nil
+        local tpMarker = nil
+        local markerConnection = nil
+
+        local function createTPMarker(pos)
+            if tpMarker then tpMarker:Destroy() end
+            if markerConnection then markerConnection:Disconnect() end
+            
+            tpMarker = Instance.new("Part")
+            tpMarker.Name = "TP_UltraVisualMarker"
+            tpMarker.Shape = Enum.PartType.Cylinder
+            tpMarker.Size = Vector3.new(0.3, 7, 7)
+            tpMarker.CFrame = CFrame.new(pos) * CFrame.Angles(0, 0, math.rad(90))
+            tpMarker.Material = Enum.Material.Neon
+            tpMarker.Color = Color3.fromRGB(0, 255, 200)
+            tpMarker.Transparency = 0.25
+            tpMarker.Anchored = true
+            tpMarker.CanCollide = false
+            tpMarker.Parent = workspace
+
+            local highlight = Instance.new("Highlight")
+            highlight.Adornee = tpMarker
+            highlight.FillColor = Color3.fromRGB(0, 255, 200)
+            highlight.FillTransparency = 0.4
+            highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+            highlight.OutlineTransparency = 0
+            highlight.Parent = tpMarker
+
+            local angle = 0
+            markerConnection = RunService.RenderStepped:Connect(function(dt)
+                if tpMarker and tpMarker.Parent then
+                    angle = (angle + dt * 120) % 360
+                    tpMarker.CFrame = CFrame.new(pos) * CFrame.Angles(0, math.rad(angle), math.rad(90))
+                end
+            end)
+        end
+
+        local function removeTPMarker()
+            if markerConnection then markerConnection:Disconnect() end
+            if tpMarker then
+                tpMarker:Destroy()
+                tpMarker = nil
+            end
+        end
+
+        createToggleCard("📍 Teleport 2 Click 3D Neon", 12, function(state)
+            tpToggleState = state
+            tpTargetPos = nil
+            removeTPMarker()
+        end)
+
+        Mouse.Button1Down:Connect(function()
+            if tpToggleState then
+                local mousePos = UserInputService:GetMouseLocation()
+                local ray = workspace.CurrentCamera:ViewportPointToRay(mousePos.X, mousePos.Y)
+                local params = RaycastParams.new()
+                params.FilterType = RaycastFilterType.Exclude
+                if LocalPlayer.Character then params.FilterDescendantsInstances = {LocalPlayer.Character, tpMarker} end
+                
+                local res = workspace:Raycast(ray.Origin, ray.Direction * 2000, params)
+                if res then
+                    local hitPos = res.Position
+                    if tpTargetPos == nil then
+                        tpTargetPos = hitPos
+                        createTPMarker(tpTargetPos)
+                        Notify("📍 TELEPORT", "Đã chọn vị trí! Nhấn lần 2 để dịch chuyển.", 2)
+                    else
+                        local char = LocalPlayer.Character
+                        if char and char:FindFirstChild("HumanoidRootPart") then
+                            char.HumanoidRootPart.CFrame = CFrame.new(tpTargetPos + Vector3.new(0, 4.5, 0))
+                            Notify("⚡ TELEPORT", "Dịch chuyển thành công!", 2)
+                        end
+                        tpTargetPos = nil
+                        removeTPMarker()
+                    end
                 end
             end
         end)
 
-        -- NÚT PHỤ
-        local ToggleMenuBtn = Instance.new("TextButton")
-        ToggleMenuBtn.Size = UDim2.new(0, 52, 0, 52)
-        ToggleMenuBtn.Position = UDim2.new(0.05, 0, 0.25, 0)
-        ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(15, 12, 24)
-        ToggleMenuBtn.BackgroundTransparency = 0.1
-        ToggleMenuBtn.Text = "HUB"
-        ToggleMenuBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        ToggleMenuBtn.TextSize = 14
-        ToggleMenuBtn.Font = Enum.Font.FredokaOne
-        ToggleMenuBtn.AutoButtonColor = false
-        ToggleMenuBtn.Parent = ScreenGui
+        -- LOOPS BYPASS MOVEMENT
+        RunService.Stepped:Connect(function()
+            pcall(function()
+                local char = LocalPlayer.Character
+                if char then
+                    if noclipEnabled then
+                        for _, part in pairs(char:GetDescendants()) do
+                            if part:IsA("BasePart") then part.CanCollide = false end
+                        end
+                    end
+                    local hum = char:FindFirstChildOfClass("Humanoid")
+                    local hrp = char:FindFirstChild("HumanoidRootPart")
 
-        local ToggleCorner = Instance.new("UICorner")
-        ToggleCorner.CornerRadius = UDim.new(1, 0)
-        ToggleCorner.Parent = ToggleMenuBtn
+                    if hum and jumpPowerEnabled then
+                        hum.UseJumpPower = true
+                        hum.JumpPower = jumpPowerValue
+                        hum.JumpHeight = jumpPowerValue / 7
+                    end
+
+                    if hum and speedEnabled then
+                        hum.WalkSpeed = walkSpeedValue
+                        if hrp and hum.MoveDirection.Magnitude > 0 then
+                            hrp.CFrame = hrp.CFrame + (hum.MoveDirection * (walkSpeedValue / 120))
+                        end
+                    end
+                end
+            end)
+        end)
+
+        RunService.RenderStepped:Connect(function()
+            if flyEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local hrp = LocalPlayer.Character.HumanoidRootPart
+                local v = hrp:FindFirstChild("FlyVel")
+                local g = hrp:FindFirstChild("FlyGyro")
+                if v and g then
+                    local cam = workspace.CurrentCamera
+                    local moveDir = Vector3.zero
+                    if UserInputService:IsKeyDown(Enum.KeyCode.W) or mobileFlyFwd then moveDir = moveDir + cam.CFrame.LookVector end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - cam.CFrame.LookVector end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - cam.CFrame.RightVector end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + cam.CFrame.RightVector end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.Space) or mobileFlyUp then moveDir = moveDir + Vector3.new(0, 1, 0) end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or mobileFlyDown then moveDir = moveDir - Vector3.new(0, 1, 0) end
+
+                    v.Velocity = moveDir * flySpeedValue
+                    g.CFrame = cam.CFrame
+                end
+            end
+        end)
+
+        -- TOGGLE BUTTON
+        local ToggleMenuBtn = Instance.new("TextButton")
+        ToggleMenuBtn.Size = UDim2.new(0, 54, 0, 54)
+        ToggleMenuBtn.Position = UDim2.new(0.02, 0, 0.25, 0)
+        ToggleMenuBtn.BackgroundColor3 = Color3.fromRGB(16, 12, 28)
+        ToggleMenuBtn.Text = "✨"
+        ToggleMenuBtn.TextSize = 24
+        ToggleMenuBtn.Parent = ScreenGui
+        Instance.new("UICorner", ToggleMenuBtn).CornerRadius = UDim.new(1, 0)
 
         local ToggleStroke = Instance.new("UIStroke")
-        ToggleStroke.Thickness = 2.5
-        ToggleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        ToggleStroke.Thickness = 3
         ToggleStroke.Parent = ToggleMenuBtn
-
-        local ToggleGradient = Instance.new("UIGradient")
-        ToggleGradient.Color = ColorSequence.new{
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 150)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 240, 255))
-        }
-        ToggleGradient.Parent = ToggleMenuBtn
 
         makeDraggable(MainFrame)
         makeDraggable(ToggleMenuBtn)
 
         RunService.RenderStepped:Connect(function()
-            local rainbowColor = getRGBColor(3)
-            UIStroke.Color = rainbowColor
-            ToggleStroke.Color = rainbowColor
-            TitleGradient.Rotation = (tick() * 90) % 360
-            ToggleGradient.Rotation = (tick() * 120) % 360
+            local rainbow = getRGBColor(2.5)
+            UIStroke.Color = rainbow
+            ToggleStroke.Color = rainbow
         end)
 
         local menuVisible = true
         ToggleMenuBtn.MouseButton1Click:Connect(function()
             menuVisible = not menuVisible
             MainFrame.Visible = menuVisible
+            ToggleMenuBtn.Text = menuVisible and "✨" or "🎮"
         end)
 
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "★ MRGHOST HUB VIP ★",
-            Text = "Đã tải xong menu hack di chuyển!",
-            Duration = 3
-        })
+        Notify("★ MRGHOST HUB ★", "Kích hoạt thành công!", 3)
     end
 
     -- =========================================================
-    -- GIAO DIỆN NHẬP KEY (KEY SYSTEM UI - Y HỆT SCRIPT TRƯỚC)
+    -- KEY SYSTEM UI (MẶC ĐỊNH LÀ: MRGHOST-VIP-2026)
     -- =========================================================
-    if isKeySavedValid() then
-        loadMainHub()
-    else
-        local KeyFrame = Instance.new("Frame")
-        KeyFrame.Name = "KeyFrame"
-        KeyFrame.Size = UDim2.new(0, 320, 0, 245)
-        KeyFrame.Position = UDim2.new(0.5, -160, 0.4, -122)
-        KeyFrame.BackgroundColor3 = Color3.fromRGB(12, 10, 18)
-        KeyFrame.Parent = ScreenGui
+    local KeyFrame = Instance.new("Frame")
+    KeyFrame.Name = "KeyFrame"
+    KeyFrame.Size = UDim2.new(0, 320, 0, 220)
+    KeyFrame.Position = UDim2.new(0.5, -160, 0.4, -110)
+    KeyFrame.BackgroundColor3 = Color3.fromRGB(12, 10, 22)
+    KeyFrame.Parent = ScreenGui
+    Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 16)
 
-        local KeyCorner = Instance.new("UICorner")
-        KeyCorner.CornerRadius = UDim.new(0, 16)
-        KeyCorner.Parent = KeyFrame
+    local KeyStroke = Instance.new("UIStroke")
+    KeyStroke.Thickness = 2
+    KeyStroke.Parent = KeyFrame
 
-        local KeyStroke = Instance.new("UIStroke")
-        KeyStroke.Thickness = 2
-        KeyStroke.Parent = KeyFrame
+    RunService.RenderStepped:Connect(function()
+        KeyStroke.Color = getRGBColor(3)
+    end)
 
-        RunService.RenderStepped:Connect(function()
-            KeyStroke.Color = getRGBColor(3)
-        end)
+    local KeyTitle = Instance.new("TextLabel")
+    KeyTitle.Size = UDim2.new(1, 0, 0, 40)
+    KeyTitle.Position = UDim2.new(0, 0, 0, 10)
+    KeyTitle.BackgroundTransparency = 1
+    KeyTitle.Text = "🔐 KEY SYSTEM VIP"
+    KeyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    KeyTitle.TextSize = 16
+    KeyTitle.Font = Enum.Font.FredokaOne
+    KeyTitle.Parent = KeyFrame
 
-        local KeyTitle = Instance.new("TextLabel")
-        KeyTitle.Size = UDim2.new(1, 0, 0, 35)
-        KeyTitle.BackgroundTransparency = 1
-        KeyTitle.Text = "🔑 MRGHOST KEY SYSTEM 💖"
-        KeyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-        KeyTitle.TextSize = 15
-        KeyTitle.Font = Enum.Font.FredokaOne
-        KeyTitle.Parent = KeyFrame
+    local KeyInput = Instance.new("TextBox")
+    KeyInput.Size = UDim2.new(1, -40, 0, 38)
+    KeyInput.Position = UDim2.new(0, 20, 0, 60)
+    KeyInput.BackgroundColor3 = Color3.fromRGB(22, 18, 36)
+    KeyInput.PlaceholderText = "Nhập Key tại đây..."
+    KeyInput.Text = ""
+    KeyInput.TextColor3 = Color3.fromRGB(0, 230, 255)
+    KeyInput.TextSize = 13
+    KeyInput.Font = Enum.Font.SourceSansBold
+    KeyInput.Parent = KeyFrame
+    Instance.new("UICorner", KeyInput).CornerRadius = UDim.new(0, 8)
 
-        -- Hiệu ứng nhún nhảy tiêu đề Key
-        task.spawn(function()
-            local baseSize = 15
-            local targetSize = 17
-            while task.wait() do
-                if KeyTitle.Parent then
-                    TweenService:Create(KeyTitle, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {TextSize = targetSize}):Play()
-                    task.wait(0.5)
-                    TweenService:Create(KeyTitle, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {TextSize = baseSize}):Play()
-                    task.wait(0.5)
-                else
-                    break
-                end
-            end
-        end)
+    local SubmitBtn = Instance.new("TextButton")
+    SubmitBtn.Size = UDim2.new(1, -40, 0, 38)
+    SubmitBtn.Position = UDim2.new(0, 20, 0, 110)
+    SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 120)
+    SubmitBtn.Text = "KÍCH HOẠT HUB"
+    SubmitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SubmitBtn.TextSize = 13
+    SubmitBtn.Font = Enum.Font.FredokaOne
+    SubmitBtn.Parent = KeyFrame
+    Instance.new("UICorner", SubmitBtn).CornerRadius = UDim.new(0, 8)
 
-        local KeyTextBox = Instance.new("TextBox")
-        KeyTextBox.Size = UDim2.new(1, -32, 0, 34)
-        KeyTextBox.Position = UDim2.new(0, 16, 0, 38)
-        KeyTextBox.BackgroundColor3 = Color3.fromRGB(24, 20, 35)
-        KeyTextBox.PlaceholderText = "Nhập Key VIP tại đây..."
-        KeyTextBox.Text = ""
-        KeyTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-        KeyTextBox.TextSize = 13
-        KeyTextBox.Font = Enum.Font.SourceSansBold
-        KeyTextBox.Parent = KeyFrame
+    local GetKeyBtn = Instance.new("TextButton")
+    GetKeyBtn.Size = UDim2.new(1, -40, 0, 30)
+    GetKeyBtn.Position = UDim2.new(0, 20, 0, 160)
+    GetKeyBtn.BackgroundColor3 = Color3.fromRGB(40, 35, 60)
+    GetKeyBtn.Text = "📋 Copy Key Mặc Định"
+    GetKeyBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    GetKeyBtn.TextSize = 11
+    GetKeyBtn.Font = Enum.Font.FredokaOne
+    GetKeyBtn.Parent = KeyFrame
+    Instance.new("UICorner", GetKeyBtn).CornerRadius = UDim.new(0, 8)
 
-        local BoxCorner = Instance.new("UICorner")
-        BoxCorner.CornerRadius = UDim.new(0, 8)
-        BoxCorner.Parent = KeyTextBox
+    makeDraggable(KeyFrame)
 
-        local KeyNoteText = Instance.new("TextLabel")
-        KeyNoteText.Size = UDim2.new(1, -32, 0, 18)
-        KeyNoteText.Position = UDim2.new(0, 16, 0, 76)
-        KeyNoteText.BackgroundTransparency = 1
-        KeyNoteText.Text = "✨ Key vĩnh viễn (Get 1 lần duy nhất) ✨"
-        KeyNoteText.TextColor3 = Color3.fromRGB(0, 240, 255)
-        KeyNoteText.TextSize = 11
-        KeyNoteText.Font = Enum.Font.SourceSansBold
-        KeyNoteText.Parent = KeyFrame
+    GetKeyBtn.MouseButton1Click:Connect(function()
+        if setclipboard then
+            setclipboard(CORRECT_KEY)
+            Notify("📋 KEY COPIED", "Đã copy Key mặc định vào bộ nhớ tạm!", 3)
+        else
+            KeyInput.Text = CORRECT_KEY
+            Notify("📋 KEY", "Key mặc định: " .. CORRECT_KEY, 3)
+        end
+    end)
 
-        local CheckBtn = Instance.new("TextButton")
-        CheckBtn.Size = UDim2.new(0.45, -4, 0, 34)
-        CheckBtn.Position = UDim2.new(0, 16, 0, 98)
-        CheckBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 120)
-        CheckBtn.Text = "Check Key"
-        CheckBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        CheckBtn.TextSize = 13
-        CheckBtn.Font = Enum.Font.FredokaOne
-        CheckBtn.Parent = KeyFrame
+    SubmitBtn.MouseButton1Click:Connect(function()
+        if KeyInput.Text == CORRECT_KEY then
+            KeyFrame:Destroy()
+            loadMainHub()
+        else
+            Notify("❌ KHÔNG CHÍNH XÁC", "Key nhập không đúng, vui lòng thử lại!", 3)
+            KeyInput.Text = ""
+        end
+    end)
 
-        local BtnCorner1 = Instance.new("UICorner")
-        BtnCorner1.CornerRadius = UDim.new(0, 8)
-        BtnCorner1.Parent = CheckBtn
-
-        local GetKeyBtn = Instance.new("TextButton")
-        GetKeyBtn.Size = UDim2.new(0.45, -4, 0, 34)
-        GetKeyBtn.Position = UDim2.new(0.555, 0, 0, 98)
-        GetKeyBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
-        GetKeyBtn.Text = "Discord Key"
-        GetKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        GetKeyBtn.TextSize = 12
-        GetKeyBtn.Font = Enum.Font.FredokaOne
-        GetKeyBtn.Parent = KeyFrame
-
-        local BtnCorner2 = Instance.new("UICorner")
-        BtnCorner2.CornerRadius = UDim.new(0, 8)
-        BtnCorner2.Parent = GetKeyBtn
-
-        local BackupBtn = Instance.new("TextButton")
-        BackupBtn.Size = UDim2.new(1, -32, 0, 32)
-        BackupBtn.Position = UDim2.new(0, 16, 0, 140)
-        BackupBtn.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
-        BackupBtn.Text = "🔗 Nếu ko có Discord dùng cái này"
-        BackupBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        BackupBtn.TextSize = 12
-        BackupBtn.Font = Enum.Font.FredokaOne
-        BackupBtn.Parent = KeyFrame
-
-        local BtnCorner3 = Instance.new("UICorner")
-        BtnCorner3.CornerRadius = UDim.new(0, 8)
-        BtnCorner3.Parent = BackupBtn
-
-        local StatusText = Instance.new("TextLabel")
-        StatusText.Size = UDim2.new(1, -32, 0, 22)
-        StatusText.Position = UDim2.new(0, 16, 0, 182)
-        StatusText.BackgroundTransparency = 1
-        StatusText.Text = "Chọn hình thức lấy key để tiếp tục"
-        StatusText.TextColor3 = Color3.fromRGB(180, 180, 180)
-        StatusText.TextSize = 12
-        StatusText.Font = Enum.Font.SourceSans
-        StatusText.Parent = KeyFrame
-
-        makeDraggable(KeyFrame)
-
-        GetKeyBtn.MouseButton1Click:Connect(function()
-            if setclipboard then
-                setclipboard(KEY_LINK)
-                StatusText.Text = "✅ Đã copy link Discord!"
-                StatusText.TextColor3 = Color3.fromRGB(0, 255, 120)
-            end
-        end)
-
-        BackupBtn.MouseButton1Click:Connect(function()
-            if setclipboard then
-                setclipboard(BACKUP_LINK)
-                StatusText.Text = "✅ Đã copy link Fnote (ko có Discord)!"
-                StatusText.TextColor3 = Color3.fromRGB(255, 200, 0)
-            end
-        end)
-
-        CheckBtn.MouseButton1Click:Connect(function()
-            if KeyTextBox.Text == CORRECT_KEY then
-                StatusText.Text = "🎉 Key đúng! Đang tải Hub..."
-                StatusText.TextColor3 = Color3.fromRGB(0, 255, 120)
-                saveKeyCache(KeyTextBox.Text)
-                task.wait(1)
-                KeyFrame:Destroy()
-                loadMainHub()
-            else
-                StatusText.Text = "❌ Key không chính xác, vui lòng thử lại!"
-                StatusText.TextColor3 = Color3.fromRGB(255, 50, 50)
-            end
-        end)
-    end
 end)
- 
